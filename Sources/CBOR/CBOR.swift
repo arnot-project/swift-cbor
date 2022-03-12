@@ -1,3 +1,5 @@
+import Foundation
+
 public struct CBOREncoder {
     
     public init() {}
@@ -12,58 +14,60 @@ public struct CBOREncoder {
     }
     
     private func buildUTXOs(from entity: Transaction) -> String {
-        guard  entity.utxoIn + entity.utxoOut > 0 else {
+        guard  entity.utxoIn.count + entity.utxoOut.count > 0 else {
             return "F6"
         }
         var result = ""
-        result += utxo(ofSize: entity.utxoIn, index: 0)
-        result += utxo(ofSize: entity.utxoOut, index: 1)
+        result += utxo(entity.utxoIn, index: 0)
+        result += utxo(entity.utxoOut, index: 1)
         
         return result
     }
     
-    private func utxo(ofSize size: Int, index: Int) -> String {
-        guard size > 0 else {
+    private func utxo(_ utxo: [Utxo], index: Int) -> String {
+        guard utxo.count > 0 else {
             return ""
         }
-        var result = "0\(index)8\(size)"
-        (0..<size).forEach { _ in
-            result += utxo()
+        var result = "0\(index)8\(utxo.count)"
+        utxo.forEach {
+            let data = String(format:"%02X", $0.ix)
+            result += "8240\(data)"
         }
         return result
     }
     
     private func startingPoint(from entity: Transaction) -> String {
-        if entity.utxoIn > 0 && entity.utxoOut > 0 {
+        if entity.utxoIn.count  > 0 && entity.utxoOut.count > 0 {
             return "A2"
-        } else if entity.utxoIn > 0 || entity.utxoOut > 0 {
+        } else if entity.utxoIn.count > 0 || entity.utxoOut.count > 0 {
             return "A1"
         }
         
         return ""
     }
-    
-    private func utxo() -> String {
-        "824000"
-    }
 }
 
 public struct  Transaction {
-    var utxoIn: Int = 0
-    var utxoOut: Int = 0
+    var utxoIn: [Utxo] = []
+    var utxoOut: [Utxo] = []
     var scriptKeyHash: Int = 0
     
     public init() {}
 
-    public mutating func add(utxoIn utxo: [UInt8]) {
-        utxoIn += 1
+    public mutating func add(utxoIn utxo: [UInt8], ix: Int) {
+        utxoIn.append(Utxo(data: utxo, ix: ix))
     }
     
-    public mutating func add(utxoOut utxo: [UInt8]) {
-        utxoOut += 1
+    public mutating func add(utxoOut utxo: [UInt8], ix: Int) {
+        utxoOut.append(Utxo(data: utxo, ix: ix))
     }
 
     public mutating func addScriptKeyHash() {
         scriptKeyHash += 1
     }
+}
+
+struct Utxo {
+    let data: [UInt8]
+    let ix: Int
 }

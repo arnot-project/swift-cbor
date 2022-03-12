@@ -21,7 +21,7 @@ final class CBORTests: XCTestCase {
         var entity = Transaction()
 
         // when
-        entity.add(utxoIn: [])
+        entity.add(utxoIn: [], ix: 0)
         let result = sut.encode(entity)
 
         // then
@@ -47,7 +47,7 @@ final class CBORTests: XCTestCase {
         var entity = Transaction()
 
         // when
-        entity.add(utxoOut: [])
+        entity.add(utxoOut: [], ix: 0)
         let result = sut.encode(entity)
 
         // then
@@ -60,8 +60,8 @@ final class CBORTests: XCTestCase {
         var entity = Transaction()
 
         // when
-        entity.add(utxoIn: [])
-        entity.add(utxoOut: [])
+        entity.add(utxoIn: [], ix: 0)
+        entity.add(utxoOut: [], ix: 0)
         let result = sut.encode(entity)
 
         // then
@@ -74,11 +74,37 @@ final class CBORTests: XCTestCase {
         var entity = Transaction()
 
         // when
-        entity.add(utxoOut: [])
-        entity.add(utxoOut: [])
+        entity.add(utxoOut: [], ix: 0)
+        entity.add(utxoOut: [], ix: 0)
         let result = sut.encode(entity)
 
         // then
         XCTAssertEqual(result, "83A10182824000824000F6F6")
+    }
+    
+    func testCanAddIxToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [], ix: 1)
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A10081824001F6F6")
+    }
+    
+    func testCanAddIxInHexToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [], ix: 10)
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A1008182400AF6F6")
     }
 }
