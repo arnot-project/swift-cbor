@@ -3,7 +3,7 @@ import CBOR
 
 final class CBORTests: XCTestCase {
     
-    func testCanInitialise() {
+    func testCanEncode() {
         // given
         let sut = CBOREncoder()
         let entity = Transaction()
@@ -12,19 +12,32 @@ final class CBORTests: XCTestCase {
         let result = sut.encode(entity)
 
         // then
-        XCTAssertEqual(result, "80")
+        XCTAssertEqual(result, "83F6F6F6")
     }
     
-    func testUtxoIn() {
+    func testCanAddUtxo() {
         // given
         let sut = CBOREncoder()
         var entity = Transaction()
-        entity.addUtxoIn()
 
         // when
+        entity.addUtxo()
         let result = sut.encode(entity)
 
         // then
-        XCTAssertEqual(result, "81A0")
+        XCTAssertEqual(result, "83A0F6F6")
+    }
+
+    func testAddScriptKeyHash() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.addScriptKeyHash()
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83F680F6")
     }
 }
