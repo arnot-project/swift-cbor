@@ -5,31 +5,31 @@ public struct CBOREncoder {
     public func encode(_ entity: Transaction) -> String {
         var result = "83"
         result += startingPoint(from: entity)
-        result += transactionsFirstPartBuilder(from: entity)
+        result += buildUTXOs(from: entity)
         result += entity.scriptKeyHash == 0 ? "F6" : "80"
     
         return result + "F6"
     }
     
-    private func transactionsFirstPartBuilder(from entity: Transaction) -> String {
-        var result = ""
-        switch (entity.utxoIn, entity.utxoOut) {
-        case (1, 0):
-            result += "008\(entity.utxoIn)" + utxo()
-            result += ""
-        case (0, 1):
-            result += ""
-            result += "018\(entity.utxoOut)" + utxo()
-        case (0, 2):
-            result += ""
-            result += "018\(entity.utxoOut)" + utxo() + utxo()
-        case (1, 1):
-            result += "008\(entity.utxoIn)" + utxo()
-            result += "018\(entity.utxoOut)" + utxo()
-        case (_, _):
-            result += "F6"
+    private func buildUTXOs(from entity: Transaction) -> String {
+        guard  entity.utxoIn + entity.utxoOut > 0 else {
+            return "F6"
         }
+        var result = ""
+        result += utxo(ofSize: entity.utxoIn, index: 0)
+        result += utxo(ofSize: entity.utxoOut, index: 1)
         
+        return result
+    }
+    
+    private func utxo(ofSize size: Int, index: Int) -> String {
+        guard size > 0 else {
+            return ""
+        }
+        var result = "0\(index)8\(size)"
+        (0..<size).forEach { _ in
+            result += utxo()
+        }
         return result
     }
     
