@@ -13,6 +13,16 @@ public struct CBOREncoder {
         return result + "F6"
     }
     
+    private func startingPoint(from entity: Transaction) -> String {
+        if entity.utxoIn.count  > 0 && entity.utxoOut.count > 0 {
+            return "A2"
+        } else if entity.utxoIn.count > 0 || entity.utxoOut.count > 0 {
+            return "A1"
+        }
+        
+        return ""
+    }
+    
     private func buildUTXOs(from entity: Transaction) -> String {
         guard  entity.utxoIn.count + entity.utxoOut.count > 0 else {
             return "F6"
@@ -30,21 +40,33 @@ public struct CBOREncoder {
         }
         var result = "0\(index)8\(utxo.count)"
         utxo.forEach {
-            let data = String(format:"%02X", $0.ix)
-            result += "8240\(data)"
+            let ix = String(format:"%02X", $0.ix)
+            result += "82\(abc($0.data))\(ix)"
         }
         return result
     }
     
-    private func startingPoint(from entity: Transaction) -> String {
-        if entity.utxoIn.count  > 0 && entity.utxoOut.count > 0 {
-            return "A2"
-        } else if entity.utxoIn.count > 0 || entity.utxoOut.count > 0 {
-            return "A1"
+    private func abc(_ data: [UInt8]) -> String {
+        let majorType2 = 0x40
+        let leadingString: String
+        if isSimpleValue(data) {
+            leadingString = hex(majorType2 + data.count)
+        } else {
+            let additionalInformation =  24
+            leadingString = hex(majorType2 + additionalInformation) + hex(data.count)
         }
-        
-        return ""
+        let hexData = data.map { hex(Int($0)) }.joined()
+        return "\(leadingString)\(hexData)"
     }
+    
+    private func isSimpleValue(_ data: [UInt8]) -> Bool {
+        data.count <= 23
+    }
+    
+    private func hex(_ value: Int) -> String {
+        String(format:"%02X", value)
+    }
+
 }
 
 public struct  Transaction {

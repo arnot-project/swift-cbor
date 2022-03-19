@@ -107,4 +107,102 @@ final class CBORTests: XCTestCase {
         // then
         XCTAssertEqual(result, "83A1008182400AF6F6")
     }
+    
+    func testCanAddUtxoDataToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [0], ix: 0)
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A1008182410000F6F6")
+    }
+    
+    func testCanAddMediumUtxoDataToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0
+        ], ix: 0)
+        
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A1008182500000000000000000000000000000000000F6F6")
+    }
+    
+    func testCanAddLargeUtxoDataToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0
+        ], ix: 0)
+        
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A10081825820000000000000000000000000000000000000000000000000000000000000000000F6F6")
+    }
+    
+    func testCanAddUtxoDataWithSimpleValueToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0
+        ], ix: 0)
+        
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A100818257000000000000000000000000000000000000000000000000F6F6")
+    }
+    
+    func testCanAddUtxoDataWithAdditionalInformationToUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0
+        ], ix: 0)
+        
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A1008182581800000000000000000000000000000000000000000000000000F6F6")
+    }
+
 }
