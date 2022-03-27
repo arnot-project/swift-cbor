@@ -204,5 +204,85 @@ final class CBORTests: XCTestCase {
         // then
         XCTAssertEqual(result, "83A1008182581800000000000000000000000000000000000000000000000000F6F6")
     }
+    
+    func testCanAddFee() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(0)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A10200F6F6")
+    }
 
+    func testCanAddFeeAndUtxoIn() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.add(utxoIn: [
+        ], ix: 0)
+        
+        entity.addFee(0)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A200818240000200F6F6")
+    }
+    
+    func testCanAddFeeWithSimpleValue() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(1)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A10201F6F6")
+    }
+    
+    func testCanAddFeeWithNotSimpleValue() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(24)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A1021818F6F6")
+    }
+    
+    func testCanAddFeeBeloveThan255() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(255)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A10218FFF6F6")
+    }
+    
+    func testCanAddFeeAboveThan256() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(256)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A102190100F6F6")
+    }
 }
