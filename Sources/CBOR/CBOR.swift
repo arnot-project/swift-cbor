@@ -81,35 +81,37 @@ public struct CBOREncoder {
             return hex(value)
         }
         
-        return "\(hex(23 + numberOfAdditionalBytes(from: value)))\(hex(value))"
+        return "\(hex(23 + padding(from: value)))\(hex(value))"
     }
     
-    private func numberOfAdditionalBytes(from value: Int) -> Int {
-        guard value > 0 else { return 1 }
-        var bytes = 0
+    private func padding(from value: Int) -> Int {
+        var buffor = 8
         var currentValue = value
+        var pad = 0
         while currentValue > 0 {
-            currentValue = currentValue >> 8
-            bytes += 1
+            currentValue = value >> buffor
+            buffor = buffor * 2
+            pad += 1
         }
-        return bytes
+        return pad
+    }
+    
+    private func hexSize(from value: Int) -> Int {
+        var currentValue = value
+        var buffor = 4
+        var result = 1
+        repeat {
+            result = result * 2
+            buffor = buffor * 2
+            currentValue = value >> buffor
+        } while currentValue > 0
+
+        return result
     }
     
     private func hex(_ value: Int) -> String {
-        let _digits = numberOfAdditionalBytes(from: value)
-        let realDigit = digitsInPowerOfTwo(from: _digits)
-        return String(format:"%0\(realDigit * 2)X", value)
-    }
-    
-    private func digitsInPowerOfTwo(from value: Int) -> Int {
-        guard value > 1 else {
-            return 1
-        }
-        var digit = 2
-        while digit < value {
-            digit = digit << 1
-        }
-        return digit
+        let _digits = hexSize(from: value)
+        return String(format:"%0\(_digits)X", value)
     }
 }
 

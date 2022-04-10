@@ -258,6 +258,8 @@ final class CBORTests: XCTestCase {
         
         // then
         XCTAssertEqual(result, "83A1021818F6F6")
+//        83A102 17 18 F6F6
+//        83A102 18 18 F6F6
     }
     
     func testCanAddFeeBeloveThan255() {
@@ -305,7 +307,7 @@ final class CBORTests: XCTestCase {
         var entity = Transaction()
         
         // when
-        entity.addFee(0xFFFF + 1)
+        entity.addFee(0xFF_FF + 1)
         let result = sut.encode(entity)
         
         // then
@@ -318,11 +320,24 @@ final class CBORTests: XCTestCase {
         var entity = Transaction()
         
         // when
-        entity.addFee(0xFFFFFF)
+        entity.addFee(0xFF_FF_FF)
         let result = sut.encode(entity)
         
         // then
         XCTAssertEqual(result, "83A1021A00FFFFFFF6F6")
+    }
+    
+    func testCanAddFeeAboveFFFFFF() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(0xFF_FF_FF + 1)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A1021A01000000F6F6")
     }
     
     
