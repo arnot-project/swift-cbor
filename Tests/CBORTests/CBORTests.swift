@@ -285,4 +285,88 @@ final class CBORTests: XCTestCase {
         // then
         XCTAssertEqual(result, "83A102190100F6F6")
     }
+    
+    func testCanAddFeeAboveThan511() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(512)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A102190200F6F6")
+    }
+    
+    func testCanAddFeeAboveThanFFFF() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(0xFFFF + 1)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A1021A00010000F6F6")
+    }
+    
+    func testCanAddFeeFFFFFF() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+        
+        // when
+        entity.addFee(0xFFFFFF)
+        let result = sut.encode(entity)
+        
+        // then
+        XCTAssertEqual(result, "83A1021A00FFFFFFF6F6")
+    }
+    
+    
+//
+    func test() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(utxoIn: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0
+        ], ix: 0)
+        entity.add(utxoOut: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0], ix: 0)
+        entity.add(utxoOut: [
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 0, 0], ix: 0)
+        entity.addFee(1024)
+        entity.addScriptKeyHash()
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83A3008182582000000000000000000000000000000000000000000000000000000000000000000001828258200000000000000000000000000000000000000000000000000000000000000000008258200000000000000000000000000000000000000000000000000000000000000000000219040080F6")
+
+    }
 }
