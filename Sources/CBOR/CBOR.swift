@@ -46,14 +46,13 @@ public struct CBOREncoder {
         }
         var result = "0\(index)8\(utxo.count)"
         utxo.forEach {
-            let ix = String(format:"%02X", $0.ix)
-            result += "82\(appendingHeader(to: $0.data))\(ix)"
+            result += "82\(byteString(from: $0.data))\(unsignedInteger(from: $0.ix))"
         }
         return result
     }
     
-    private func appendingHeader(to data: [UInt8]) -> String {
-        let majorType2 = 0x40
+    private func byteString(from data: [UInt8]) -> String {
+        let majorType2 = 0b010_00000
         let header: String
         if isSimpleValue(data) {
             header = hex(majorType2 + data.count)
@@ -73,15 +72,16 @@ public struct CBOREncoder {
         guard let fee = entity.fee else {
             return ""
         }
-        return "02\(appendingHeader(to: fee))"
+        return "02\(unsignedInteger(from: fee))"
     }
     
-    private func appendingHeader(to value: Int) -> String {
+    private func unsignedInteger(from value: Int) -> String {
+        let majorType0 = 0b000_00000
         guard value > 23 else {
-            return hex(value)
+            return hex(majorType0 + value)
         }
         
-        return "\(hex(23 + padding(from: value)))\(hex(value))"
+        return "\(hex(majorType0 + 23 + padding(from: value)))\(hex(value))"
     }
     
     private func padding(from value: Int) -> Int {
