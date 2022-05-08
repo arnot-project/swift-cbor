@@ -28,17 +28,17 @@ final class CBORTests: XCTestCase {
         XCTAssertEqual(result, "83A10081824000F6F6")
     }
 
-    func testAddScriptKeyHash() {
+    func testAddEmptyPublicKeyAndSignature() {
         // given
         let sut = CBOREncoder()
         var entity = Transaction()
 
         // when
-        entity.addScriptKeyHash()
+        entity.add(publicKey: [], signature: [])
         let result = sut.encode(entity)
 
         // then
-        XCTAssertEqual(result, "83F680F6")
+        XCTAssertEqual(result, "83F6F6F6")
     }
     
     func testCanAddUtxoOut() {
@@ -373,11 +373,11 @@ final class CBORTests: XCTestCase {
             0, 0, 0, 0,
             0, 0, 0, 0], ix: 0)
         entity.addFee(1024)
-        entity.addScriptKeyHash()
+        entity.add(publicKey: [], signature: [])
         let result = sut.encode(entity)
 
         // then
-        XCTAssertEqual(result, "83A3008182582000000000000000000000000000000000000000000000000000000000000000000001828258200000000000000000000000000000000000000000000000000000000000000000008258200000000000000000000000000000000000000000000000000000000000000000000219040080F6")
+        XCTAssertEqual(result, "83A30081825820000000000000000000000000000000000000000000000000000000000000000000018282582000000000000000000000000000000000000000000000000000000000000000000082582000000000000000000000000000000000000000000000000000000000000000000002190400F6F6")
     }
     
     func testCanAddUtxoInWithIx24() {
@@ -400,4 +400,65 @@ final class CBORTests: XCTestCase {
         // then
         XCTAssertEqual(result, "83A10081825700000000000000000000000000000000000000000000001818F6F6")
     }
+    
+    func testCanSignEmptyPayloadWithSingleValues() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(
+            publicKey: [0],
+            signature: [0]
+        )
+
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83F6A100818241004100F6")
+    }
+    
+    func testCanSignEmptyPayloadWithBasicValues() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(
+            publicKey: [0],
+            signature: [0, 0]
+        )
+
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83F6A10081824100420000F6")
+    }
+    
+    func testCanSignEmptyPayloadWithComplexValues() {
+        // given
+        let sut = CBOREncoder()
+        var entity = Transaction()
+
+        // when
+        entity.add(
+            publicKey: [
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            ],
+            signature: [0, 0, 0]
+        )
+
+        let result = sut.encode(entity)
+
+        // then
+        XCTAssertEqual(result, "83F6A10081825820000000000000000000000000000000000000000000000000000000000000000043000000F6")
+    }
+    
 }

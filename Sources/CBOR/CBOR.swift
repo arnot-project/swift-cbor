@@ -9,7 +9,7 @@ public struct CBOREncoder {
         result += startingPoint(from: entity)
         result += buildUTXOs(from: entity)
         result += buildFee(from: entity)
-        result += entity.scriptKeyHash == 0 ? "F6" : "80"
+        result += buildSignature(from: entity)
     
         return result + "F6"
     }
@@ -113,14 +113,24 @@ public struct CBOREncoder {
         let _digits = hexSize(from: value)
         return String(format:"%0\(_digits)X", value)
     }
+    
+    private func buildSignature(from entity: Transaction) -> String {
+        guard entity.publicKey.count + entity.signature.count > 0 else {
+            return "F6"
+        }
+        var result = "A1008182"
+        result += byteString(from: entity.publicKey)
+        result += byteString(from: entity.signature)
+        return result
+    }
 }
 
 public struct  Transaction {
     var utxoIn: [Utxo] = []
     var utxoOut: [Utxo] = []
-    var scriptKeyHash: Int = 0
+    var publicKey: [UInt8] = []
+    var signature: [UInt8] = []
     var fee: Int?
-
     
     public init() {}
 
@@ -132,8 +142,9 @@ public struct  Transaction {
         utxoOut.append(Utxo(data: utxo, ix: ix))
     }
 
-    public mutating func addScriptKeyHash() {
-        scriptKeyHash += 1
+    public mutating func add(publicKey: [UInt8], signature: [UInt8]) {
+        self.publicKey = publicKey
+        self.signature = signature
     }
     
     public mutating func addFee(_ fee: Int) {
